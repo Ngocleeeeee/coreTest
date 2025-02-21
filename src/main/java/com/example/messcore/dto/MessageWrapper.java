@@ -38,11 +38,20 @@ public class MessageWrapper {
         private RelationshipData customer;
         @JsonProperty("staff")
         private RelationshipData staff;
+        @JsonProperty("booking")
+        private RelationshipData booking;
+        @JsonProperty("property")
+        private RelationshipsData property;
     }
 
 
     @Data
     public static class RelationshipData {
         private UUID id;
+    }
+    @Data
+    public static class RelationshipsData {
+        private UUID id;
+        private String type;
     }
 }

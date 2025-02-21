@@ -23,16 +23,20 @@ public class MessageCoreService {
     public void processMessage(MessageWrapper.MessageData messageDTO, String queueName) {
         UUID customerId = messageDTO.getRelationships().getCustomer().getId();
         UUID staffId = messageDTO.getRelationships().getStaff().getId();
+        UUID bookingID = messageDTO.getRelationships().getBooking().getId();
+        UUID propertyId = messageDTO.getRelationships().getProperty().getId();
+        String propertyType = messageDTO.getRelationships().getProperty().getType();
 
         // Kiểm tra hội thoại có tồn tại chưa
         Conversation conversation = conversationRepository.findByCustomerId(customerId)
                 .orElseGet(() -> {
                     Conversation newConversation = new Conversation();
                     newConversation.setActive((byte) 1);
-                    newConversation.setPropertyId(customerId);
-                    newConversation.setPropertyType("HOTEL");
+                    newConversation.setPropertyId(propertyId);
+                    newConversation.setPropertyType(propertyType);
                     newConversation.setCustomerId(customerId);
                     newConversation.setIsClose(false);
+                    newConversation.setBookingId(bookingID);
                     return conversationRepository.save(newConversation);
                 });
 
