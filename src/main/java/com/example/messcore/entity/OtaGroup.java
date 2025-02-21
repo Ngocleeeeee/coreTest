@@ -15,6 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor public class OtaGroup {
     @Id
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "version")

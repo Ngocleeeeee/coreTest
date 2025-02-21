@@ -1,6 +1,6 @@
 package com.example.messcore.listener;
 
-import com.example.messcore.dto.MessageDTO;
+//import com.example.messcore.dto.MessageDTO;
 import com.example.messcore.dto.MessageWrapper;
 import com.example.messcore.service.MessageCoreService;
 import lombok.RequiredArgsConstructor;
@@ -15,14 +15,14 @@ public class MessageListener {
 
     @RabbitListener(queues = "queueGWIn")
     public void receiveQueueGWIn(MessageWrapper messageWrapper) {
-        MessageDTO messageDTO = messageWrapper.getData();
-        messageService.processMessage(messageDTO, "queueExOut");
+        MessageWrapper.MessageData messageData = messageWrapper.getData();
+        messageService.processMessage(messageData, "queueExOut");
     }
 
     @RabbitListener(queues = "queueExIn")
     public void receiveQueueExIn(MessageWrapper messageWrapper) {
-        MessageDTO messageDTO = messageWrapper.getData();
-        messageService.processMessage(messageDTO, "queueGWOut");
+        MessageWrapper.MessageData messageData = messageWrapper.getData();
+        messageService.processMessage(messageData, "queueGWOut");
     }
 
 }

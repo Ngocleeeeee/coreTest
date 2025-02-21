@@ -1,6 +1,6 @@
 package com.example.messcore.service;
 
-import com.example.messcore.dto.MessageDTO;
+import com.example.messcore.dto.MessageWrapper;
 import com.example.messcore.entity.Conversation;
 import com.example.messcore.entity.Message;
 import com.example.messcore.repository.ConversationRepository;
@@ -20,21 +20,18 @@ public class MessageCoreService {
     private final RabbitTemplate rabbitTemplate;
 
     @Transactional
-    public void processMessage(MessageDTO messageDTO,String queueName) {
-        UUID conversationId = messageDTO.getRelationship().getConversation().getId();
-        UUID customerId = messageDTO.getRelationship().getCustomer().getId();
-        UUID staffId = messageDTO.getRelationship().getStaff().getId();
+    public void processMessage(MessageWrapper.MessageData messageDTO, String queueName) {
+        UUID customerId = messageDTO.getRelationships().getCustomer().getData().getId();
+        UUID staffId = messageDTO.getRelationships().getStaff().getData().getId();
 
         // Kiểm tra hội thoại có tồn tại chưa
-        Conversation conversation = conversationRepository.findById(conversationId)
+        Conversation conversation = conversationRepository.findByCustomerId(customerId)
                 .orElseGet(() -> {
                     Conversation newConversation = new Conversation();
-                    newConversation.setId(conversationId);
                     newConversation.setActive((byte) 1);
-                    newConversation.setPropertyId(conversationId);
-                    newConversation.setPropertyType("test");
-                    newConversation.setSortIndex(1);
-                    newConversation.setVersion((long) 1.0);
+                    newConversation.setPropertyId(customerId);
+                    newConversation.setPropertyType("HOTEL");
+                    newConversation.setCustomerId(customerId);
                     newConversation.setIsClose(false);
                     return conversationRepository.save(newConversation);
                 });
@@ -43,21 +40,17 @@ public class MessageCoreService {
         // Lưu tin nhắn vào database
         Message message = new Message();
         message.setConversationId(conversation.getId());
-        message.setContent(messageDTO.getContent());
-        message.setExternalMessageCode(messageDTO.getExternalMessageCode());
-        message.setFromAi(messageDTO.getFromAi());
+        message.setContent(messageDTO.getAttributes().getContent());
+        message.setExternalMessageCode(messageDTO.getAttributes().getExternalMessageCode());
+        message.setFromAi(messageDTO.getAttributes().getFromAi());
         message.setContentType(message.getContentType());
-        message.setIsProperty(messageDTO.getIsProperty());
-        message.setIsRead(messageDTO.getIsRead());
-        message.setUpdatedDate(messageDTO.getUpdatedDate());
-//        message.setCustomerId(customerId);
-//        message.setStaffId(staffId);
-        message.setActive((byte) 1);
-        message.setVersion((long) 1.0);
-        message.setSortIndex(1);
+        message.setIsProperty(messageDTO.getAttributes().getIsProperty());
+        message.setIsRead(messageDTO.getAttributes().getIsRead());
+        message.setUpdatedDate(messageDTO.getAttributes().getUpdatedDate());
+        message.setCustomerId(customerId);
+        message.setStaffId(staffId);
         messageRepository.save(message);
 
-        // Đẩy tin nhắn ra Queue B
         rabbitTemplate.convertAndSend(queueName, messageDTO);
     }
 }

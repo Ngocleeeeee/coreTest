@@ -17,6 +17,7 @@ import java.util.UUID;
 public class Staff {
     @Id
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "staffCode")
