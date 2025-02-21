@@ -33,22 +33,16 @@ public class MessageWrapper {
     @Data
     public static class Relationships {
         @JsonProperty("conversation")
-        private SimpleRelationship conversation;
+        private RelationshipData conversation;
         @JsonProperty("customer")
-        private SimpleRelationship customer;
+        private RelationshipData customer;
         @JsonProperty("staff")
-        private SimpleRelationship staff;
+        private RelationshipData staff;
     }
 
-    @Data
-    public static class SimpleRelationship {
-        @JsonProperty("data")
-        private RelationshipData data;
-    }
 
     @Data
     public static class RelationshipData {
         private UUID id;
-        private String type;
     }
 }

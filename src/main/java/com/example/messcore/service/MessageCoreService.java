@@ -21,8 +21,8 @@ public class MessageCoreService {
 
     @Transactional
     public void processMessage(MessageWrapper.MessageData messageDTO, String queueName) {
-        UUID customerId = messageDTO.getRelationships().getCustomer().getData().getId();
-        UUID staffId = messageDTO.getRelationships().getStaff().getData().getId();
+        UUID customerId = messageDTO.getRelationships().getCustomer().getId();
+        UUID staffId = messageDTO.getRelationships().getStaff().getId();
 
         // Kiểm tra hội thoại có tồn tại chưa
         Conversation conversation = conversationRepository.findByCustomerId(customerId)
