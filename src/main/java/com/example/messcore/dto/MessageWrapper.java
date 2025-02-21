@@ -27,13 +27,15 @@ public class MessageWrapper {
         private Boolean isProperty;
         private Boolean isRead;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+        private LocalDateTime createdDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
         private LocalDateTime updatedDate;
     }
 
     @Data
     public static class Relationships {
         @JsonProperty("conversation")
-        private RelationshipData conversation;
+        private RelationshipConversationData conversation;
         @JsonProperty("customer")
         private RelationshipData customer;
         @JsonProperty("staff")
@@ -48,6 +50,13 @@ public class MessageWrapper {
     @Data
     public static class RelationshipData {
         private UUID id;
+    }
+    @Data
+    public static class RelationshipConversationData {
+        private UUID id;
+        private String nameVi;
+        private String externalConversationCode;
+        private String aiConversationCode;
     }
     @Data
     public static class RelationshipsData {
