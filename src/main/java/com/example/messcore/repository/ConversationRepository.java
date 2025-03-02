@@ -1,6 +1,6 @@
 package com.example.messcore.repository;
 
-import com.example.messcore.entity.Conversation;
+import ezcloud.message.messenger.Conversation;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
     Optional<Conversation> findById(UUID conversationId);
-
+    Conversation findConversationById(UUID conversationID);
     Optional<Conversation> findByCustomerId(UUID customerId);
 }
 

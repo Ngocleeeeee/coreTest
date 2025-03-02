@@ -1,6 +1,6 @@
 package com.example.messcore.repository;
 
-import com.example.messcore.entity.Message;
+import ezcloud.message.messenger.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

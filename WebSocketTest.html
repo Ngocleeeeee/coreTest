@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chat 2 Người</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=6LegJeMqAAAAAPXci37RosKMxeRcLqokfzuUEptu"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            height: 80vh;
+            display: none;
+        }
+        .chat-box {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-input {
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-input button, .login-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-input button:hover, .login-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<button class="login-button" id="login-button">Đăng nhập</button>
+
+<div class="chat-container" id="chat-container">
+    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-input">
+        <input type="text" id="message-input" placeholder="Nhập tin nhắn...">
+        <button id="send-button">Gửi</button>
+    </div>
+</div>
+
+<script>
+    let stompClient;
+    const propertyCode = "Unknown";
+    const customerId = "b1d5de6f-33a1-4094-ad06-c6d89421e326";
+
+    document.getElementById("login-button").addEventListener("click", function() {
+        grecaptcha.ready(function() {
+            grecaptcha.execute("6LegJeMqAAAAAPXci37RosKMxeRcLqokfzuUEptu", { action: "login" }).then(function(token) {
+                loginWithRecaptcha(token);
+
+                console.log("🔑 Recaptcha token:", token);
+            });
+        });
+    });
+
+    function loginWithRecaptcha(recaptchaToken) {
+        fetch("http://localhost:8080/auth/guest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recaptchaToken })
+        })
+            .then(response => response.json())
+            .then(data => {
+                localStorage.setItem("token", data.data);
+                document.getElementById("login-button").style.display = "none";
+                document.getElementById("chat-container").style.display = "flex";
+                connectWebSocket();
+            })
+            .catch(error => console.error("Login failed", error));
+    }
+
+    function connectWebSocket() {
+        const token = localStorage.getItem("token");
+        const wsUrl = "ws://localhost:8080/ws-guide-websocket";
+        const socket = new WebSocket(wsUrl);
+        stompClient = Stomp.over(socket);
+
+        const headers = { Authorization: `Bearer ${token}` };
+
+        stompClient.connect(headers, function (frame) {
+            console.log("STOMP connected: " + frame);
+            // var sessionId = /\/([^\/]+)\/websocket/.exec(socket._transport.url)[1];
+            // console.log("Session ID: " + sessionId);
+            // stompClient.subscribe('/user/topic/greetings/${hotelCode}', (message) => {
+            stompClient.subscribe(`/topic/greetings-` + customerId + propertyCode, (message) => {
+                console.log("📩 Received message:", message.body);
+                if (message.body) {
+                    const chatBox = document.getElementById('chat-box');
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', 'left');
+                    messageElement.textContent = message.body.content;
+                    chatBox.appendChild(messageElement);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }
+            });
+        }, function (error) {
+            console.error("STOMP connection error:", error);
+        });
+    }
+
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const messageText = messageInput.value.trim();
+        const token = localStorage.getItem("token");
+
+        if (!stompClient || !stompClient.connected) {
+            console.error("❌ STOMP client is not connected.");
+            return;
+        }
+
+        if (messageText !== "") {
+            stompClient.send("/app/hello",
+                { "Authorization": `Bearer ${token}` },
+                JSON.stringify({ content: messageText, customerId: customerId, propertyCode: propertyCode })
+            );
+        }
+    }
+
+    document.getElementById("send-button").addEventListener("click", sendMessage);
+    document.getElementById("message-input").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>
