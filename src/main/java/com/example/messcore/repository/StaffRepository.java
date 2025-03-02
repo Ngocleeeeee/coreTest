@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface StaffrRepository extends JpaRepository<Staff, UUID> {
+public interface StaffRepository extends JpaRepository<Staff, UUID> {
 
     Staff findStaffById(UUID uuid);
 }

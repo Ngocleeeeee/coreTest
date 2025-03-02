@@ -21,7 +21,7 @@ public class MessageCoreService {
     private final RabbitTemplate rabbitTemplate;
     private final CustomerRepository customerRepository;
     private final BookingRepository bookingRepository;
-    private final StaffrRepository staffrRepository;
+    private final StaffRepository staffRepository;
 
     @Transactional
     public void processMessage(MessageWrapper.MessageData messageDTO, String queueName) {
@@ -58,7 +58,7 @@ public class MessageCoreService {
         message.setRead(messageDTO.getAttributes().getIsRead());
         message.setUpdatedDate(messageDTO.getAttributes().getUpdatedDate());
         message.setCustomer(customerRepository.findCustomerById(customerId));
-        message.setStaff(staffrRepository.findStaffById(staffId));
+        message.setStaff(staffRepository.findStaffById(staffId));
         messageRepository.save(message);
         conversation.setLastMessageId(message.getId());
         conversationRepository.save(conversation);
