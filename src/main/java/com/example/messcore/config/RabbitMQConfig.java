@@ -1,8 +1,10 @@
 package com.example.messcore.config;
 
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -12,36 +14,22 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMQConfig {
-    @Value("${queueGWIn.name}")
-    private String queueGWIn;
-
-    @Value("${queueGWOut.name}")
-    private String queueGWOut;
-
-    @Value("${queueExIn.name}")
-    private String queueExIn;
-
-    @Value("${queueExOut.name}")
-    private String queueExOut;
+    private static final String EXCHANGE_NAME = "hotel_roomrate_exchange";
+    private static final String DEAD_LETTER_EXCHANGE = "hotel_roomrate_dead_exchange";
 
     @Bean
-    public Queue queueGWIn() {
-        return new Queue(queueGWIn, true);
+    public DirectExchange hotelRoomRateExchange() {
+        return new DirectExchange(EXCHANGE_NAME);
     }
 
     @Bean
-    public Queue queueGWOut() {
-        return new Queue(queueGWOut, true);
+    public DirectExchange deadLetterExchange() {
+        return new DirectExchange(DEAD_LETTER_EXCHANGE);
     }
 
     @Bean
-    public Queue queueExIn() {
-        return new Queue(queueExIn, true);
-    }
-
-    @Bean
-    public Queue queueExOut() {
-        return new Queue(queueExOut, true);
+    public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
     }
 
     @Bean
