@@ -1,6 +1,7 @@
 package com.example.messcore.authen.controller;
 
 
+import com.example.messcore.authen.dto.GuestRequest;
 import com.example.messcore.authen.service.AuthService;
 import com.example.messcore.authen.service.EmailService;
 import com.example.messcore.authen.service.OtpService;
@@ -36,32 +37,31 @@ public class AuthController {
     }
 
     @PostMapping("/guest")
-    @RateLimitLogin(maxAttempts = 3, attemptWindow = 5, lockTime = 10)
-    public Res loginAsGuest(@RequestBody Map<String, String> requestBody, HttpServletRequest request) {
-        String recaptchaToken = requestBody.get("recaptchaToken");
+//    @RateLimitLogin(maxAttempts = 3, attemptWindow = 5, lockTime = 10)
+    public Res loginAsGuest(@RequestBody GuestRequest requestBody) {
+//        String recaptchaToken = requestBody.get("recaptchaToken");
 
-        if (!recaptchaService.validateRecaptcha(recaptchaToken)) {
+        if (!recaptchaService.validateRecaptcha(requestBody.getRecaptchaToken())) {
             return new Res(Res.STATUS_ERR, "Invalid recaptcha token");
         }
-        String token = authService.loginAsGuest(request);
+        String token = authService.loginAsGuest(requestBody.getEmail());
         return new Res(Res.STATUS_OK, token);
     }
 
     @PostMapping("/login")
-    public Res loginWithEmail(@RequestBody Map<String, String> requestBody, @RequestParam String otp, @RequestBody CustomerRequest request) {
-        String recaptchaToken = requestBody.get("recaptchaToken");
+    public Res loginWithEmail(@RequestBody CustomerRequest request) {
 
-        if (!recaptchaService.validateRecaptcha(recaptchaToken)) {
+        if (!recaptchaService.validateRecaptcha(request.getRecaptchaToken())) {
             return new Res(Res.STATUS_ERR, "Invalid recaptcha token");
         }
-        String token = authService.loginWithEmail(otp, request);
+        String token = authService.loginWithEmail(request);
         return new Res(Res.STATUS_OK, "token: " + token);
     }
 
     @PostMapping("/request-otp")
-    public ResponseEntity<String> requestOtp(@RequestParam String email) {
+    public Res requestOtp(@RequestBody String email) {
         String otp = otpService.generateOtp(email);
         emailService.sendEmail(email, "OTP: ", otp);
-        return ResponseEntity.ok("OTP đã được gửi đến email");
+        return new Res(Res.STATUS_OK, "OTP sent to " + email);
     }
 }

@@ -37,9 +37,7 @@ public class AuthService {
 
 
     @Transactional
-    public String loginAsGuest(HttpServletRequest request) {
-        String ip = IPUtils.getClientIP(request);
-        String email = ip + "@guest.khachhang.com.vn";
+    public String loginAsGuest(String email) {
         String name = "Guest";
 
         Customer existingCustomer = customerRepository.findByEmail(email);
@@ -47,10 +45,10 @@ public class AuthService {
 //            CompletableFuture<Boolean> future = new CompletableFuture<>();
 //            pendingRegistrations.put(email, future);
 
-            notificationService.sendGuestNotification(email, name, CustomerType.GUEST);//            Customer newCustomer = new Customer();
+            //notificationService.sendGuestNotification(email, name, CustomerType.GUEST);//            Customer newCustomer = new Customer();
             Customer newCustomer = new Customer();
             newCustomer.setEmail(email);
-            newCustomer.setFirstName("Guest");
+            newCustomer.setFirstName(name);
             newCustomer.setCustomerType(CustomerType.GUEST);
             customerRepository.save(newCustomer);
 //            try {
@@ -93,9 +91,10 @@ public class AuthService {
     }
 
     @Transactional
-    public String loginWithEmail(String otp, CustomerRequest request) {
+    public String loginWithEmail(CustomerRequest request) {
         String email = request.getEmail();
         String name = request.getName();
+        String otp = request.getOtp();
 
         if (!otpService.validateOtp(email, otp)) {
             throw new RuntimeException("Mã OTP không hợp lệ hoặc đã hết hạn.");
@@ -103,23 +102,11 @@ public class AuthService {
 
         Customer existingCustomer = customerRepository.findByEmail(email);
         if (existingCustomer == null) {
-            notificationService.sendGuestNotification(email, name, CustomerType.USER);
-            CompletableFuture<Boolean> future = new CompletableFuture<>();
-            pendingRegistrations.put(email, future);
-//            Customer newCustomer = new Customer();
-//            newCustomer.setEmail(email);
-//            newCustomer.setFirstName(name);
-//            newCustomer.setCustomerType(CustomerType.USER);
-//            customerRepository.save(newCustomer);
-            try {
-                // Chờ phản hồi từ messageCore (timeout sau 5 giây)
-                Boolean isRegistered = future.get(5, TimeUnit.SECONDS);
-                if (!isRegistered) {
-                    throw new RuntimeException("Không thể đăng nhập vì tài khoản chưa được tạo.");
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Lỗi khi xác thực tài khoản: " + e.getMessage());
-            }
+            Customer newCustomer = new Customer();
+            newCustomer.setEmail(email);
+            newCustomer.setFirstName(name);
+            newCustomer.setCustomerType(CustomerType.USER);
+            customerRepository.save(newCustomer);
         }
 
         otpService.removeOtp(email);
