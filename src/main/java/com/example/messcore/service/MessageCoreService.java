@@ -42,6 +42,7 @@ public class MessageCoreService {
                     newConversation.setPropertyType(propertyType);
                     newConversation.setCustomer(customerRepository.findCustomerById(customerId));
                     newConversation.setClose(false);
+                    newConversation.setSortIndex(1);
                     newConversation.setBooking(bookingRepository.findBookingById(bookingID));
                     return conversationRepository.save(newConversation);
                 });
@@ -62,7 +63,8 @@ public class MessageCoreService {
         messageRepository.save(message);
         conversation.setLastMessageId(message.getId());
         conversationRepository.save(conversation);
-        rabbitTemplate.convertAndSend(queueName, messageDTO);
+            rabbitTemplate.convertAndSend("hotel_roomrate_exchange",queueName, messageDTO);
+
     }
     private static <T> T getSafeValue(Supplier<T> supplier) {
         try {

@@ -1,11 +1,12 @@
 package com.example.messcore.config;
 
-
-import com.example.messcore.queue.HotelQueueMessageHandler;
+import com.example.messcore.queue.ExtranetMessageHandler;
+import com.example.messcore.queue.GatewayMessageHandler;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -13,18 +14,34 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQListenerConfig {
 
     @Bean
-    public DirectMessageListenerContainer directMessageListenerContainer(
+    public DirectMessageListenerContainer gatewayListenerContainer(
             ConnectionFactory connectionFactory,
-            MessageListenerAdapter messageListenerAdapter) {
+            @Qualifier("gatewayMessageListenerAdapter") MessageListenerAdapter gatewayAdapter) {
         DirectMessageListenerContainer container = new DirectMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        container.setMessageListener(messageListenerAdapter);
         container.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        container.setMessageListener(gatewayAdapter);
         return container;
     }
 
     @Bean
-    public MessageListenerAdapter messageListenerAdapter(HotelQueueMessageHandler messageHandler) {
-        return new MessageListenerAdapter(messageHandler, "handleMessage");
+    public DirectMessageListenerContainer extranetListenerContainer(
+            ConnectionFactory connectionFactory,
+            @Qualifier("extranetMessageListenerAdapter") MessageListenerAdapter extranetAdapter) {
+        DirectMessageListenerContainer container = new DirectMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        container.setMessageListener(extranetAdapter);
+        return container;
+    }
+
+    @Bean
+    public MessageListenerAdapter gatewayMessageListenerAdapter(GatewayMessageHandler gatewayHandler) {
+        return new MessageListenerAdapter(gatewayHandler, "handleMessage");
+    }
+
+    @Bean
+    public MessageListenerAdapter extranetMessageListenerAdapter(ExtranetMessageHandler extranetHandler) {
+        return new MessageListenerAdapter(extranetHandler, "handleMessage");
     }
 }

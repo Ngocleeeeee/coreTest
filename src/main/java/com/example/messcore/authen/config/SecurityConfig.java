@@ -30,7 +30,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/guest", "/auth/request-otp", "/ws-guide-websocket/**").permitAll()
+                        .requestMatchers("/auth/login",
+                                "/auth/guest",
+                                "/auth/request-otp",
+                                "/ws-guide-websocket/**",
+                                "/hotel/create"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

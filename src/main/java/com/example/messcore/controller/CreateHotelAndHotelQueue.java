@@ -28,7 +28,6 @@ public class CreateHotelAndHotelQueue {
     @PostMapping("/create")
     @Transactional
     public String createHotel(@RequestBody HotelDto hotelDto) {
-        // Chuyển DTO thành Entity
         Hotel hotel = hotelMapper.toEntity(hotelDto);
 
         // Lưu vào database
