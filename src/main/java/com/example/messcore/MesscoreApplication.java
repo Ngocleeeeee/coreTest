@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = "com.example.messcore.repository")
 @EntityScan("ezcloud.message")
 
 public class MesscoreApplication {
