@@ -70,6 +70,7 @@ public class MessageCoreService {
         rabbitTemplate.convertAndSend("hotel_roomrate_exchange",queueName, messageDTO);
 
     }
+
     private static <T> T getSafeValue(Supplier<T> supplier) {
         try {
             return supplier.get();
