@@ -1,7 +1,7 @@
 package com.example.messcore.common;
 
-import com.example.messcore.rabbitmq.listener.HotelQueueListenerManager;
 import com.example.messcore.hotel.repository.HotelRepository;
+import com.example.messcore.rabbitmq.listener.HotelQueueListenerManager;
 import ezcloud.message.hotel.Hotel;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;

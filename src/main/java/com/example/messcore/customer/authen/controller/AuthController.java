@@ -4,17 +4,16 @@ package com.example.messcore.customer.authen.controller;
 import com.example.messcore.common.dto.Res;
 import com.example.messcore.customer.authen.dto.CustomerRequest;
 import com.example.messcore.customer.authen.dto.GuestRequest;
-
+import com.example.messcore.customer.authen.dto.UserInfoEzId;
 import com.example.messcore.customer.authen.service.AuthService;
 import com.example.messcore.customer.authen.service.EmailService;
 import com.example.messcore.customer.authen.service.OtpService;
 import com.example.messcore.customer.authen.service.RecaptchaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -61,5 +60,11 @@ public class AuthController {
         String otp = otpService.generateOtp(email);
         emailService.sendEmail(email, "OTP: ", otp);
         return new Res(Res.STATUS_OK, "OTP sent to " + email);
+    }
+
+
+    @PostMapping("/staff/login")
+    public String login(@RequestBody UserInfoEzId userInfo) {
+        return authService.authenticateStaff(userInfo);
     }
 }

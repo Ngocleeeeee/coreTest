@@ -1,10 +1,12 @@
 package com.example.messcore.customer.authen.service;
 
 import com.example.messcore.customer.authen.dto.CustomerRequest;
+import com.example.messcore.customer.authen.dto.UserInfoEzId;
 import com.example.messcore.customer.repository.CustomerRepository;
+import com.example.messcore.staff.repository.StaffRepository;
 import ezcloud.message.booking.Customer;
 import ezcloud.message.booking.CustomerType;
-
+import ezcloud.message.staff.Staff;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -111,4 +114,19 @@ public class AuthService {
         return jwtService.generateToken(email, CustomerType.USER.name());
     }
 
+    public String authenticateStaff(UserInfoEzId userInfo) {
+        Customer customer = customerRepository.findByEmail(userInfo.getEmail());
+
+        if (customer==null) {
+            Customer newCustomer = new Customer();
+            newCustomer.setFirstName(userInfo.getSub());
+            newCustomer.setEmail(userInfo.getEmail());
+            newCustomer.setLastName(userInfo.getName());
+            newCustomer.setCustomerType(CustomerType.STAFF);
+            newCustomer.setBirthdate(userInfo.getBirthdate());
+            customerRepository.save(newCustomer);
+        }
+
+        return jwtService.generateToken(userInfo.getEmail(),userInfo.role);
+    }
 }

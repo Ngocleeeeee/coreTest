@@ -1,8 +1,6 @@
 package com.example.messcore.hotel.dto;
 
 
-
-import com.example.messcore.hotel.dto.HotelI18nDto;
 import lombok.Getter;
 import lombok.Setter;
 

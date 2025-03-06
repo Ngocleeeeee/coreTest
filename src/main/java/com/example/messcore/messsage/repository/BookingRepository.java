@@ -1,7 +1,6 @@
 package com.example.messcore.messsage.repository;
 
 import ezcloud.message.booking.Booking;
-import ezcloud.message.booking.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
