@@ -6,6 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class GuestRequest {
-    private String recaptchaToken;
     private String email;
 }
