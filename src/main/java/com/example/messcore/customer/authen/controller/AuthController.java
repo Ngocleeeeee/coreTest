@@ -38,9 +38,6 @@ public class AuthController {
     public Res loginAsGuest(@RequestBody GuestRequest requestBody) {
 //        String recaptchaToken = requestBody.get("recaptchaToken");
 
-        if (!recaptchaService.validateRecaptcha(requestBody.getRecaptchaToken())) {
-            return new Res(Res.STATUS_ERR, "Invalid recaptcha token");
-        }
         String token = authService.loginAsGuest(requestBody.getEmail());
         return new Res(Res.STATUS_OK, token);
     }
@@ -48,23 +45,14 @@ public class AuthController {
     @PostMapping("/login")
     public Res loginWithEmail(@RequestBody CustomerRequest request) {
 
-        if (!recaptchaService.validateRecaptcha(request.getRecaptchaToken())) {
-            return new Res(Res.STATUS_ERR, "Invalid recaptcha token");
-        }
         String token = authService.loginWithEmail(request);
         return new Res(Res.STATUS_OK, "token: " + token);
     }
 
-    @PostMapping("/request-otp")
-    public Res requestOtp(@RequestBody String email) {
-        String otp = otpService.generateOtp(email);
-        emailService.sendEmail(email, "OTP: ", otp);
-        return new Res(Res.STATUS_OK, "OTP sent to " + email);
-    }
-
 
     @PostMapping("/staff/login")
-    public String login(@RequestBody UserInfoEzId userInfo) {
-        return authService.authenticateStaff(userInfo);
+    public Res login(@RequestBody UserInfoEzId userInfo) {
+        String token = authService.authenticateStaff(userInfo);
+        return new Res(Res.STATUS_OK, token);
     }
 }
