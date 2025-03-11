@@ -1,4 +1,4 @@
-package com.example.messcore.common;
+package com.example.messcore.rabbitmq.config;
 
 import com.example.messcore.hotel.repository.HotelRepository;
 import com.example.messcore.rabbitmq.listener.HotelQueueListenerManager;

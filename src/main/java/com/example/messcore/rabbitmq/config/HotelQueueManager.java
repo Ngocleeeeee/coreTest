@@ -1,4 +1,4 @@
-package com.example.messcore.rabbitmq.manager;
+package com.example.messcore.rabbitmq.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.BindingBuilder;

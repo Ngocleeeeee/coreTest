@@ -46,7 +46,7 @@ public class MessageCoreService {
                     newConversation.setActive((byte) 1);
                     newConversation.setPropertyId(propertyId);
                     newConversation.setPropertyType(propertyType);
-                    newConversation.setClose(false);
+                    newConversation.setClosed(false);
                     newConversation.setSortIndex(1);
 
                     Customer customer = customerRepository.findCustomerById(customerId);
@@ -65,9 +65,7 @@ public class MessageCoreService {
         message.setConversation(conversation);
         message.setContent(messageDTO.getAttributes().getContent());
         message.setExternalMessageCode(messageDTO.getAttributes().getExternalMessageCode());
-        // message.setFromAi(messageDTO.getAttributes().getFromAi());
         message.setContentType(message.getContentType());
-        message.setProperty(messageDTO.getAttributes().getIsProperty());
         message.setRead(messageDTO.getAttributes().getIsRead());
         message.setUpdatedDate(messageDTO.getAttributes().getUpdatedDate());
 
@@ -75,10 +73,14 @@ public class MessageCoreService {
         if (customer == null) {
             throw new IllegalArgumentException("Không tìm thấy customer với ID: " + customerId);
         }
-        message.setCustomer(customer);
-
         Staff staff = staffId != null ? staffRepository.findStaffById(staffId) : null;
-        message.setStaff(staff);
+        if (queueName.contains("extranet_out")) {
+            message.setSentBy(0);
+            message.setCreatedBy(customerId);
+        } else if (queueName.contains("gateway_out")) {
+            message.setSentBy(1);
+            message.setCreatedBy(staffId);
+        }
 
         messageRepository.save(message);
 

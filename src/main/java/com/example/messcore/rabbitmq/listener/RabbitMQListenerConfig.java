@@ -1,7 +1,7 @@
 package com.example.messcore.rabbitmq.listener;
 
-import com.example.messcore.rabbitmq.handle.ExtranetMessageHandler;
-import com.example.messcore.rabbitmq.handle.GatewayMessageHandler;
+import com.example.messcore.rabbitmq.config.ExtranetMessageHandler;
+import com.example.messcore.rabbitmq.config.GatewayMessageHandler;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.DirectMessageListenerContainer;

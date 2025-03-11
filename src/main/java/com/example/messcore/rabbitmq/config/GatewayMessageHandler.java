@@ -1,4 +1,4 @@
-package com.example.messcore.rabbitmq.handle;
+package com.example.messcore.rabbitmq.config;
 
 import com.example.messcore.messsage.dto.MessageWrapper;
 import com.example.messcore.messsage.service.MessageCoreService;
@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 @RequiredArgsConstructor
 
-public class ExtranetMessageHandler {
+public class GatewayMessageHandler {
     private final MessageCoreService messageService;
 
     public void handleMessage(byte[] messageBytes) throws JsonProcessingException {
@@ -24,7 +24,7 @@ public class ExtranetMessageHandler {
         MessageWrapper messageWrapper = objectMapper.readValue(messageJson, MessageWrapper.class);
         MessageWrapper.MessageData messageData = messageWrapper.getData();
         try {
-            String queueEnd ="hotel_gateway_out_"+messageData.getRelationships().getProperty().getId();
+            String queueEnd ="hotel_extranet_out_"+messageData.getRelationships().getProperty().getId();
             messageService.processMessage(messageData, queueEnd);
             System.out.println("Received message for hotel " + messageData.getRelationships().getProperty().getId() + ": " + messageData.getAttributes().getContent());
         } catch (Exception e) {

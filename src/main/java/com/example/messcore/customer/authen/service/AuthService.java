@@ -3,10 +3,8 @@ package com.example.messcore.customer.authen.service;
 import com.example.messcore.customer.authen.dto.CustomerRequest;
 import com.example.messcore.customer.authen.dto.UserInfoEzId;
 import com.example.messcore.customer.repository.CustomerRepository;
-import com.example.messcore.staff.repository.StaffRepository;
 import ezcloud.message.booking.Customer;
 import ezcloud.message.booking.CustomerType;
-import ezcloud.message.staff.Staff;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,7 +46,7 @@ public class AuthService {
             Customer newCustomer = new Customer();
             newCustomer.setEmail(email);
             newCustomer.setFirstName(name);
-            newCustomer.setCustomerType(CustomerType.GUEST);
+            newCustomer.setCustomerType(CustomerType.CUSTOMER);
             customerRepository.save(newCustomer);
 //            try {
 //                // Chờ phản hồi từ messageCore (timeout sau 5 giây)
@@ -61,7 +58,7 @@ public class AuthService {
 //                throw new RuntimeException("Lỗi khi xác thực tài khoản: " + e.getMessage());
 //            }
         }
-        return jwtService.generateToken(email, CustomerType.GUEST.name());
+        return jwtService.generateToken(email, CustomerType.CUSTOMER.name());
 
     }
 
@@ -105,13 +102,13 @@ public class AuthService {
             Customer newCustomer = new Customer();
             newCustomer.setEmail(email);
             newCustomer.setFirstName(name);
-            newCustomer.setCustomerType(CustomerType.USER);
+            newCustomer.setCustomerType(CustomerType.CUSTOMER);
             customerRepository.save(newCustomer);
         }
 
         otpService.removeOtp(email);
 
-        return jwtService.generateToken(email, CustomerType.USER.name());
+        return jwtService.generateToken(email, CustomerType.CUSTOMER.name());
     }
 
     public String authenticateStaff(UserInfoEzId userInfo) {
