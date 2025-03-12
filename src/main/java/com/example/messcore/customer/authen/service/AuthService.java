@@ -17,55 +17,37 @@ public class AuthService {
         this.customerRepository = customerRepository;
         this.jwtService = jwtService;
     }
-
-
     @Transactional
-    public String loginAsGuest(String email) {
-        String name = "Guest";
+    public String authenticate(UserInfoEzId userInfo) {
+        Customer existingCustomer = customerRepository.findByEmail(userInfo.getEmail());
 
-        Customer existingCustomer = customerRepository.findByEmail(email);
         if (existingCustomer == null) {
             Customer newCustomer = new Customer();
-            newCustomer.setEmail(email);
-            newCustomer.setFirstName(name);
-            newCustomer.setCustomerType(CustomerType.CUSTOMER);
-            customerRepository.save(newCustomer);
-
-        }
-        return jwtService.generateToken(email, CustomerType.CUSTOMER.name());
-
-    }
-
-    @Transactional
-    public String loginWithEmail(CustomerRequest request) {
-        String email = request.getEmail();
-        String name = request.getName();
-
-        Customer existingCustomer = customerRepository.findByEmail(email);
-        if (existingCustomer == null) {
-            Customer newCustomer = new Customer();
-            newCustomer.setEmail(email);
-            newCustomer.setFirstName(name);
-            newCustomer.setCustomerType(CustomerType.CUSTOMER);
-            customerRepository.save(newCustomer);
-        }
-
-        return jwtService.generateToken(email, CustomerType.CUSTOMER.name());
-    }
-
-    public String authenticateStaff(UserInfoEzId userInfo) {
-        Customer customer = customerRepository.findByEmail(userInfo.getEmail());
-
-        if (customer==null) {
-            Customer newCustomer = new Customer();
-            newCustomer.setFirstName(userInfo.getSub());
             newCustomer.setEmail(userInfo.getEmail());
-            newCustomer.setLastName(userInfo.getName());
-            newCustomer.setCustomerType(CustomerType.STAFF);
+            newCustomer.setLastName(userInfo.getType() == 1 ? userInfo.getName() : null); // Staff có lastName
             newCustomer.setBirthdate(userInfo.getBirthdate());
+            newCustomer.setPropertyId(userInfo.getPropertyId());
+            // Xác định loại người dùng dựa trên `type`
+            switch (userInfo.getType()) {
+                case 1:
+                    newCustomer.setFirstName(userInfo.getName());
+                    newCustomer.setCustomerType(CustomerType.STAFF);
+                    break;
+                case 2:
+                    newCustomer.setFirstName("GUEST");
+                    newCustomer.setCustomerType(CustomerType.GUEST);
+                    break;
+                default:
+                    newCustomer.setFirstName(userInfo.getName());
+                    newCustomer.setCustomerType(CustomerType.CUSTOMER);
+                    break;
+            }
+
             customerRepository.save(newCustomer);
+            existingCustomer = newCustomer;
         }
 
-        return jwtService.generateToken(userInfo.getEmail(), CustomerType.STAFF.name());
+        return jwtService.generateToken(existingCustomer.getEmail(), existingCustomer.getCustomerType().name());
     }
+
 }

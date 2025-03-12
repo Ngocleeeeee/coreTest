@@ -10,6 +10,7 @@ import org.mapstruct.*;
 public interface HotelMapper {
 
     Hotel toEntity(HotelDto hotelDto);
+    HotelI18n toEntity(HotelI18nDto hotelI18nDto);
 
     @AfterMapping
     default void linkHotelI18n(@MappingTarget Hotel hotel) {

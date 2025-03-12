@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
     Optional<Conversation> findById(UUID conversationId);
     Conversation findConversationById(UUID conversationID);
-    Optional<Conversation> findByCustomerId(UUID customerId);
+    Optional<Conversation> findByCustomerIdAndPropertyId(UUID customerId,UUID propertyId);
 }
 

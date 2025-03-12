@@ -7,9 +7,14 @@ import com.example.messcore.hotel.repository.HotelRepository;
 import com.example.messcore.rabbitmq.config.HotelQueueManager;
 import com.example.messcore.rabbitmq.listener.HotelQueueListenerManager;
 import ezcloud.message.hotel.Hotel;
+import ezcloud.message.hotel.HotelI18n;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -21,18 +26,39 @@ public class HotelService {
     private final HotelQueueManager hotelQueueManager;
     private final HotelQueueListenerManager hotelQueueListenerManager;
 
+    //update
+
     @Transactional
-    public String createHotel(HotelDto hotelDto) {
-        Hotel hotel = hotelMapper.toEntity(hotelDto);
+    public String createOrUpdateHotel(HotelDto hotelDto) {
+        Optional<Hotel> existingHotelOpt = hotelRepository.findByHotelCode(hotelDto.getHotelCode());
 
-        // Lưu vào database
-        hotel = hotelRepository.saveAndFlush(hotel);
-        hotelI18nRepository.saveAll(hotel.getHotelI18n());
+        if (existingHotelOpt.isPresent()) {
+            // Nếu Hotel tồn tại, chỉ cập nhật thông tin
+            Hotel existingHotel = existingHotelOpt.get();
+            hotelMapper.partialUpdate(hotelDto, existingHotel);
+            hotelRepository.save(existingHotel);
 
-        // Tạo queue mới theo hotelId
-        hotelQueueManager.createQueueForHotel(hotel.getId());
-        hotelQueueListenerManager.startListeningForHotel(hotel.getId());
+            // Cập nhật danh sách HotelI18n
+            hotelI18nRepository.deleteByHotelId(existingHotel.getId()); // Xóa bản ghi cũ
+            Set<HotelI18n> updatedHotelI18ns = hotelDto.getHotelI18n().stream()
+                    .map(hotelMapper::toEntity)
+                    .peek(hotelI18n -> hotelI18n.setHotel(existingHotel))
+                    .collect(Collectors.toSet());
+            hotelI18nRepository.saveAll(updatedHotelI18ns);
 
-        return "Hotel created successfully with UUID: " + hotel.getId();
+            return "Hotel updated successfully with UUID: " + existingHotel.getId();
+        } else {
+            // Nếu Hotel chưa tồn tại, tạo mới như bình thường
+            Hotel hotel = hotelMapper.toEntity(hotelDto);
+            hotel = hotelRepository.saveAndFlush(hotel);
+            hotelI18nRepository.saveAll(hotel.getHotelI18n());
+
+            // Tạo queue mới theo hotelId
+            hotelQueueManager.createQueueForHotel(hotel.getId());
+            hotelQueueListenerManager.startListeningForHotel(hotel.getId());
+
+            return "Hotel created successfully with UUID: " + hotel.getId();
+        }
     }
+
 }

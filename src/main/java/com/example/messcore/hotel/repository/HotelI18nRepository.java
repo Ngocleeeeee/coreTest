@@ -9,4 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface HotelI18nRepository extends JpaRepository<HotelI18n, UUID> {
+    void deleteByHotelId(UUID hotelId);
+
 }

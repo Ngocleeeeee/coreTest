@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,4 +21,6 @@ public class UserInfoEzId {
     public String preferred_username;
     public String email;
     public boolean email_verified;
+    public Integer type;
+    public UUID propertyId;
 }

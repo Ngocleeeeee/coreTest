@@ -17,6 +17,6 @@ public class CreateHotelAndHotelQueue {
 
     @PostMapping("/create")
     public String createHotel(@RequestBody HotelDto hotelDto) {
-        return hotelService.createHotel(hotelDto);
+        return hotelService.createOrUpdateHotel(hotelDto);
     }
 }

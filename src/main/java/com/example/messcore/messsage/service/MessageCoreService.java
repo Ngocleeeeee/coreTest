@@ -40,7 +40,11 @@ public class MessageCoreService {
             throw new IllegalArgumentException("Customer ID không được null");
         }
 
-        Conversation conversation = conversationRepository.findByCustomerId(customerId)
+        if (propertyId == null) {
+            throw new IllegalArgumentException("Property ID không được null");
+        }
+
+        Conversation conversation = conversationRepository.findByCustomerIdAndPropertyId(customerId,propertyId)
                 .orElseGet(() -> {
                     Conversation newConversation = new Conversation();
                     newConversation.setActive((byte) 1);

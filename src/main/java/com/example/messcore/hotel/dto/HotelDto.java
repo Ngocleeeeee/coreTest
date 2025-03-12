@@ -26,14 +26,5 @@ public class HotelDto implements Serializable {
     private String phone;
     private String defaultImageUrl;
     private Set<HotelI18nDto> hotelI18n;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
 
-    public void setStartDate(String startDate) {
-        this.startDate = LocalDateTime.parse(startDate);
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = LocalDateTime.parse(endDate);
-    }
 }
