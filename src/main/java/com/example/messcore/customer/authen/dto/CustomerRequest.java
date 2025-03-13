@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 public class CustomerRequest {
@@ -21,6 +23,7 @@ public class CustomerRequest {
         return email;
     }
     public CustomerType type;
+    public UUID propertyId;
 
     public @NotBlank(message = "Họ tên không được để trống") String getName() {
         return name;

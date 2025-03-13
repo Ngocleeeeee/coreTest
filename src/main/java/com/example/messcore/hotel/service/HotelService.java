@@ -33,13 +33,12 @@ public class HotelService {
         Optional<Hotel> existingHotelOpt = hotelRepository.findByHotelCode(hotelDto.getHotelCode());
 
         if (existingHotelOpt.isPresent()) {
-            // Nếu Hotel tồn tại, chỉ cập nhật thông tin
+
             Hotel existingHotel = existingHotelOpt.get();
             hotelMapper.partialUpdate(hotelDto, existingHotel);
             hotelRepository.save(existingHotel);
 
-            // Cập nhật danh sách HotelI18n
-            hotelI18nRepository.deleteByHotelId(existingHotel.getId()); // Xóa bản ghi cũ
+            hotelI18nRepository.deleteByHotelId(existingHotel.getId());
             Set<HotelI18n> updatedHotelI18ns = hotelDto.getHotelI18n().stream()
                     .map(hotelMapper::toEntity)
                     .peek(hotelI18n -> hotelI18n.setHotel(existingHotel))
@@ -48,12 +47,11 @@ public class HotelService {
 
             return "Hotel updated successfully with UUID: " + existingHotel.getId();
         } else {
-            // Nếu Hotel chưa tồn tại, tạo mới như bình thường
+
             Hotel hotel = hotelMapper.toEntity(hotelDto);
             hotel = hotelRepository.saveAndFlush(hotel);
             hotelI18nRepository.saveAll(hotel.getHotelI18n());
 
-            // Tạo queue mới theo hotelId
             hotelQueueManager.createQueueForHotel(hotel.getId());
             hotelQueueListenerManager.startListeningForHotel(hotel.getId());
 
