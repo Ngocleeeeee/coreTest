@@ -18,30 +18,15 @@ public class AuthService {
         this.jwtService = jwtService;
     }
     @Transactional
-    public String authenticate(UserInfoEzId userInfo) {
+    public String authenticateCustomerOrGuest(CustomerRequest userInfo) {
         Customer existingCustomer = customerRepository.findByEmail(userInfo.getEmail());
 
         if (existingCustomer == null) {
             Customer newCustomer = new Customer();
             newCustomer.setEmail(userInfo.getEmail());
-            newCustomer.setLastName(userInfo.getType() == 1 ? userInfo.getName() : null); // Staff có lastName
-            newCustomer.setBirthdate(userInfo.getBirthdate());
-            newCustomer.setPropertyId(userInfo.getPropertyId());
-            // Xác định loại người dùng dựa trên `type`
-            switch (userInfo.getType()) {
-                case 1:
-                    newCustomer.setFirstName(userInfo.getName());
-                    newCustomer.setCustomerType(CustomerType.STAFF);
-                    break;
-                case 2:
-                    newCustomer.setFirstName("GUEST");
-                    newCustomer.setCustomerType(CustomerType.GUEST);
-                    break;
-                default:
-                    newCustomer.setFirstName(userInfo.getName());
-                    newCustomer.setCustomerType(CustomerType.CUSTOMER);
-                    break;
-            }
+            newCustomer.setFirstName(userInfo.getName() != null ? userInfo.getName() : "Guest");
+
+            newCustomer.setCustomerType(userInfo.getType());
 
             customerRepository.save(newCustomer);
             existingCustomer = newCustomer;
@@ -49,5 +34,22 @@ public class AuthService {
 
         return jwtService.generateToken(existingCustomer.getEmail(), existingCustomer.getCustomerType().name());
     }
+
+    public String authenticateStaff(UserInfoEzId userInfo) {
+        Customer customer = customerRepository.findByEmail(userInfo.getEmail());
+
+        if (customer == null) {
+            Customer newCustomer = new Customer();
+            newCustomer.setFirstName(userInfo.getSub());
+            newCustomer.setEmail(userInfo.getEmail());
+            newCustomer.setLastName(userInfo.getName());
+            newCustomer.setCustomerType(CustomerType.STAFF);
+            newCustomer.setBirthdate(userInfo.getBirthdate());
+            customerRepository.save(newCustomer);
+        }
+
+        return jwtService.generateToken(userInfo.getEmail(), CustomerType.STAFF.name());
+    }
+
 
 }

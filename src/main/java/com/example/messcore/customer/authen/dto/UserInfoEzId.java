@@ -2,6 +2,7 @@ package com.example.messcore.customer.authen.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import ezcloud.message.booking.CustomerType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,6 +22,6 @@ public class UserInfoEzId {
     public String preferred_username;
     public String email;
     public boolean email_verified;
-    public Integer type;
+    public CustomerType type;
     public UUID propertyId;
 }
