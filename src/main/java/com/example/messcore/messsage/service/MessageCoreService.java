@@ -1,6 +1,7 @@
 package com.example.messcore.messsage.service;
 
 import com.example.messcore.customer.repository.CustomerRepository;
+import com.example.messcore.customer.repository.OtaRepository;
 import com.example.messcore.messsage.dto.MessageWrapper;
 import com.example.messcore.messsage.repository.BookingRepository;
 import com.example.messcore.messsage.repository.ConversationRepository;
@@ -8,8 +9,10 @@ import com.example.messcore.messsage.repository.MessageRepository;
 import com.example.messcore.staff.repository.StaffRepository;
 import ezcloud.message.booking.Booking;
 import ezcloud.message.booking.Customer;
+import ezcloud.message.booking.CustomerType;
 import ezcloud.message.messenger.Conversation;
 import ezcloud.message.messenger.Message;
+import ezcloud.message.ota.OTA;
 import ezcloud.message.staff.Staff;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -25,15 +28,28 @@ public class MessageCoreService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final FirebaseService firebaseService;
     private final CustomerRepository customerRepository;
     private final BookingRepository bookingRepository;
+    private final OtaRepository otaRepository;
     private final StaffRepository staffRepository;
+
+    private static <T> T getSafeValue(Supplier<T> supplier) {
+        try {
+            return supplier.get();
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
     @Transactional
     public void processMessage(MessageWrapper.MessageData messageDTO, String queueName) {
         UUID staffId = getSafeValue(() -> messageDTO.getRelationships().getStaff().getId());
         UUID bookingID = getSafeValue(() -> messageDTO.getRelationships().getBooking().getId());
         UUID customerId = getSafeValue(() -> messageDTO.getRelationships().getCustomer().getId());
         UUID propertyId = getSafeValue(() -> messageDTO.getRelationships().getProperty().getId());
+        UUID otaId = getSafeValue(() -> messageDTO.getRelationships().getConversation().getOtaId());
+
         String propertyType = getSafeValue(() -> messageDTO.getRelationships().getProperty().getType());
 
         if (customerId == null) {
@@ -44,7 +60,7 @@ public class MessageCoreService {
             throw new IllegalArgumentException("Property ID không được null");
         }
 
-        Conversation conversation = conversationRepository.findByCustomerIdAndPropertyId(customerId,propertyId)
+        Conversation conversation = conversationRepository.findByCustomerIdAndPropertyId(customerId, propertyId)
                 .orElseGet(() -> {
                     Conversation newConversation = new Conversation();
                     newConversation.setActive((byte) 1);
@@ -59,48 +75,61 @@ public class MessageCoreService {
                     }
                     newConversation.setCustomer(customer);
 
+                    OTA ota = otaId != null ? otaRepository.findById(otaId).orElse(null) : null;
+                    newConversation.setOta(ota);
+
                     Booking booking = bookingID != null ? bookingRepository.findById(bookingID).orElse(null) : null;
                     newConversation.setBooking(booking);
 
                     return conversationRepository.save(newConversation);
                 });
+            Message message = new Message();
 
-        Message message = new Message();
-        message.setConversation(conversation);
-        message.setContent(messageDTO.getAttributes().getContent());
-        message.setExternalMessageCode(messageDTO.getAttributes().getExternalMessageCode());
-        message.setContentType(message.getContentType());
-        message.setRead(messageDTO.getAttributes().getIsRead());
-        message.setUpdatedDate(messageDTO.getAttributes().getUpdatedDate());
+        try {
+            message.setConversation(conversation);
+            message.setContent(messageDTO.getAttributes().getContent());
+            message.setExternalMessageCode(messageDTO.getAttributes().getExternalMessageCode());
+            message.setContentType(message.getContentType());
+            message.setRead(false);
+            message.setUpdatedDate(messageDTO.getAttributes().getUpdatedDate());
 
-        Customer customer = customerRepository.findCustomerById(customerId);
-        if (customer == null) {
-            throw new IllegalArgumentException("Không tìm thấy customer với ID: " + customerId);
+            Customer customer = customerRepository.findCustomerById(customerId);
+            if (customer == null) {
+                throw new IllegalArgumentException("Không tìm thấy customer với ID: " + customerId);
+            }
+            Staff staff = staffId != null ? staffRepository.findStaffById(staffId) : null;
+            if (queueName.contains("extranet_out")) {
+                message.setSentBy(CustomerType.CUSTOMER.getValue());
+                message.setCreatedBy(customerId);
+            } else if (queueName.contains("gateway_out")) {
+                message.setSentBy(CustomerType.STAFF.getValue());
+                message.setCreatedBy(staffId);
+            }
+
+            messageRepository.save(message);
+            conversation.setLastMessageId(message.getId());
+            conversationRepository.save(conversation);
+
+            firebaseService.updateMessageStatus("messages",String.valueOf(message.getId()), "SENT");
+
+            rabbitTemplate.convertAndSend("hotel_roomrate_exchange", queueName, messageDTO);
+        } catch (Exception e) {
+            firebaseService.updateMessageStatus("messages",String.valueOf(message.getId()), "FAILED");
+            throw new RuntimeException("Lưu tin nhắn thất bại", e);
         }
-        Staff staff = staffId != null ? staffRepository.findStaffById(staffId) : null;
-        if (queueName.contains("extranet_out")) {
-            message.setSentBy(0);
-            message.setCreatedBy(customerId);
-        } else if (queueName.contains("gateway_out")) {
-            message.setSentBy(1);
-            message.setCreatedBy(staffId);
-        }
 
+    }
+    @Transactional
+    public Message updateMessageReadStatus(UUID messageId, boolean isRead) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy message với ID: " + messageId));
+
+        message.setRead(isRead);
         messageRepository.save(message);
 
-        conversation.setLastMessageId(message.getId());
-        conversationRepository.save(conversation);
+        firebaseService.updateMessageStatus("messagesStatus",messageId.toString(), isRead ? "READ" : "UNREAD");
 
-        rabbitTemplate.convertAndSend("hotel_roomrate_exchange", queueName, messageDTO);
-    }
-
-
-    private static <T> T getSafeValue(Supplier<T> supplier) {
-        try {
-            return supplier.get();
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return message;
     }
 
 }
