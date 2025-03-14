@@ -21,11 +21,9 @@ public class MessageWrapper {
     @Data
     public static class MessageAttributes {
         private String externalMessageCode;
-        private Boolean fromAi;
         private String content;
         private String contentType;
         private Boolean isProperty;
-        private Boolean isRead;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
         private LocalDateTime createdDate;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
@@ -54,6 +52,7 @@ public class MessageWrapper {
     @Data
     public static class RelationshipConversationData {
         private UUID id;
+        private UUID otaId;
         private String nameVi;
         private String externalConversationCode;
         private String aiConversationCode;
