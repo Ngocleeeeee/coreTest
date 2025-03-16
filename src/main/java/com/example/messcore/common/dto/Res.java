@@ -13,7 +13,7 @@ public class Res {
     private int responseCode;
     private Object data;
 
-    public Res(int statusErr, String data) {
+    public Res(int statusErr, Object data) {
         this.responseCode = statusErr;
         this.data = data;
     }

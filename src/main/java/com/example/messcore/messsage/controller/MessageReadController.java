@@ -1,14 +1,14 @@
 package com.example.messcore.messsage.controller;
 
-import com.example.messcore.hotel.dto.HotelDto;
+import com.example.messcore.common.dto.Res;
 import com.example.messcore.messsage.dto.MessageUpdateRequest;
 import com.example.messcore.messsage.service.MessageCoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/messages")
@@ -18,9 +18,9 @@ public class MessageReadController {
     private final MessageCoreService messageCoreService;
 
     @PutMapping("/updateStatus")
-    public ResponseEntity<String> updateMessageReadStatus(@RequestBody MessageUpdateRequest messageUpdateRequest) {
-
-        messageCoreService.updateMessageReadStatus(messageUpdateRequest.getMessageId(), messageUpdateRequest.isRead());
-        return ResponseEntity.ok("Cập nhật trạng thái đọc thành công");
+    public Res updateMessagesReadStatus(@RequestBody MessageUpdateRequest messageUpdateRequest) {
+        messageCoreService.updateMessagesReadStatus(messageUpdateRequest.getMessageIds(), messageUpdateRequest.isRead());
+        return new Res(Res.STATUS_OK, messageUpdateRequest);
     }
+
 }

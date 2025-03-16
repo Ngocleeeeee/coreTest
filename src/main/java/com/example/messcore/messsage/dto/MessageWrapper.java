@@ -20,6 +20,7 @@ public class MessageWrapper {
 
     @Data
     public static class MessageAttributes {
+        private UUID id;
         private String externalMessageCode;
         private String content;
         private String contentType;

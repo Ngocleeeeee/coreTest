@@ -19,6 +19,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -109,6 +110,7 @@ public class MessageCoreService {
             messageRepository.save(message);
             conversation.setLastMessageId(message.getId());
             conversationRepository.save(conversation);
+            messageDTO.getAttributes().setId(message.getId());
 
             firebaseService.updateMessageStatus("messages",String.valueOf(message.getId()), "SENT");
 
@@ -120,16 +122,21 @@ public class MessageCoreService {
 
     }
     @Transactional
-    public Message updateMessageReadStatus(UUID messageId, boolean isRead) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy message với ID: " + messageId));
+    public List<Message> updateMessagesReadStatus(List<UUID> messageIds, boolean isRead) {
+        List<Message> messages = messageRepository.findAllById(messageIds);
 
-        message.setRead(isRead);
-        messageRepository.save(message);
+        if (messages.isEmpty()) {
+            throw new IllegalArgumentException("Không tìm thấy message với các ID đã cung cấp");
+        }
 
-        firebaseService.updateMessageStatus("messagesStatus",messageId.toString(), isRead ? "READ" : "UNREAD");
+        messages.forEach(message -> message.setRead(isRead));
+        messageRepository.saveAll(messages);
 
-        return message;
+        messages.forEach(message ->
+                firebaseService.updateMessageStatus("messagesStatus", message.getId().toString(), isRead ? "READ" : "UNREAD")
+        );
+
+        return messages;
     }
 
 }
