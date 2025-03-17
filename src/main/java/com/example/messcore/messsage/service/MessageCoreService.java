@@ -122,7 +122,7 @@ public class MessageCoreService {
 
     }
     @Transactional
-    public List<Message> updateMessagesReadStatus(List<UUID> messageIds, boolean isRead) {
+    public void updateMessagesReadStatus(List<UUID> messageIds, boolean isRead) {
         List<Message> messages = messageRepository.findAllById(messageIds);
 
         if (messages.isEmpty()) {
@@ -136,7 +136,6 @@ public class MessageCoreService {
                 firebaseService.updateMessageStatus("messagesStatus", message.getId().toString(), isRead ? "READ" : "UNREAD")
         );
 
-        return messages;
     }
 
 }

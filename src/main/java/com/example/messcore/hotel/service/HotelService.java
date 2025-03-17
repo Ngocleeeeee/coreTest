@@ -12,8 +12,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,5 +60,15 @@ public class HotelService {
             return "Hotel created successfully with UUID: " + hotel.getId();
         }
     }
+    @Transactional
+    public void updateAiStatus(List<UUID> hotelIds, Boolean isAutoReply) {
+        List<Hotel> hotels = hotelRepository.findAllById(hotelIds);
 
+        if (hotels.isEmpty()) {
+            throw new IllegalArgumentException("Không tìm thấy hotel với các ID đã cung cấp");
+        }
+
+        hotels.forEach(hotel -> hotel.setIsAutoReply(isAutoReply));
+        hotelRepository.saveAll(hotels);
+    }
 }
