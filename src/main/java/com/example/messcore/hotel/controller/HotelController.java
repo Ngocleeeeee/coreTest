@@ -19,7 +19,7 @@ public class HotelController {
         return new Res( Res.STATUS_OK,hotelService.createOrUpdateHotel(hotelDto));
     }
 
-    @PutMapping("/{hotelId}/isAutoReply")
+    @PutMapping("/updateAiStatus")
     public Res updateAiStatus(@RequestBody AiStatusUpdateRequest AiStatusUpdateRequest) {
         hotelService.updateAiStatus(AiStatusUpdateRequest.getHotelIds(), AiStatusUpdateRequest.isAutoReply());
 
