@@ -77,7 +77,7 @@ public class MessageCoreService {
                     newConversation.setCustomer(customer);
 
                     OTA ota = otaId != null ? otaRepository.findById(otaId).orElse(null) : null;
-                    newConversation.setOta(ota);
+                    newConversation.setOtaId(ota);
 
                     Booking booking = bookingID != null ? bookingRepository.findById(bookingID).orElse(null) : null;
                     newConversation.setBooking(booking);
