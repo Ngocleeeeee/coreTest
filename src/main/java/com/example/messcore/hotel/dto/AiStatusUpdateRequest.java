@@ -1,4 +1,4 @@
-package com.example.messcore.customer.authen.dto;
+package com.example.messcore.hotel.dto;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 public class AiStatusUpdateRequest {
-    private List<UUID> hotelIds;
+
+    private UUID hotelId;
     private boolean isAutoReply;
 }

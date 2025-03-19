@@ -34,7 +34,8 @@ public class SecurityConfig {
                                 "/auth/guest",
                                 "/auth/request-otp",
                                 "/ws-guide-websocket/**",
-                                "/api/messages/updateStatus"
+                                "/api/messages/updateStatus",
+                                "/hotel/create"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
