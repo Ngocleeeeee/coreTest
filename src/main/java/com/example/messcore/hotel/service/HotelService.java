@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -61,14 +60,12 @@ public class HotelService {
         }
     }
     @Transactional
-    public void updateAiStatus(List<UUID> hotelIds, Boolean isAutoReply) {
-        List<Hotel> hotels = hotelRepository.findAllById(hotelIds);
-
-        if (hotels.isEmpty()) {
-            throw new IllegalArgumentException("Không tìm thấy hotel với các ID đã cung cấp");
+    public void updateAiStatus(UUID hotelId, Boolean isAutoReply) {
+        Optional<Hotel> hotelOpt = hotelRepository.findById(hotelId);
+        if (hotelOpt.isPresent()) {
+            Hotel hotel = hotelOpt.get();
+            hotel.setIsAutoReply(isAutoReply);
+            hotelRepository.save(hotel);
         }
-
-        hotels.forEach(hotel -> hotel.setIsAutoReply(isAutoReply));
-        hotelRepository.saveAll(hotels);
     }
 }

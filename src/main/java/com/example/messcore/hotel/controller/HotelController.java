@@ -1,7 +1,7 @@
 package com.example.messcore.hotel.controller;
 
 import com.example.messcore.common.dto.Res;
-import com.example.messcore.customer.authen.dto.AiStatusUpdateRequest;
+import com.example.messcore.hotel.dto.AiStatusUpdateRequest;
 import com.example.messcore.hotel.dto.HotelDto;
 import com.example.messcore.hotel.service.HotelService;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ public class HotelController {
 
     @PutMapping("/updateAiStatus")
     public Res updateAiStatus(@RequestBody AiStatusUpdateRequest AiStatusUpdateRequest) {
-        hotelService.updateAiStatus(AiStatusUpdateRequest.getHotelIds(), AiStatusUpdateRequest.isAutoReply());
+        hotelService.updateAiStatus(AiStatusUpdateRequest.getHotelId(), AiStatusUpdateRequest.isAutoReply());
 
         return new Res(Res.STATUS_OK, AiStatusUpdateRequest);
     }
